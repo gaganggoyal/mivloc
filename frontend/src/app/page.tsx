@@ -101,7 +101,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-sky/10 px-6 py-8 text-center text-xs text-skyl/50">
-        <p>🛡️ SafeChat · safechat.website · Chat Safely. Stay Protected.</p>
+        <p>🛡️ SafeChat · safechat.live · Chat Safely. Stay Protected.</p>
         <p className="mt-1">End-to-end encrypted · Messages auto-lock in 60s · One-time chats vanish forever</p>
       </footer>
     </div>

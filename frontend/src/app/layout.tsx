@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://safechat.website'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://safechat.live'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

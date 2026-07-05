@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 /**
- * Friend opens https://safechat.website/invite/AB12CD34
+ * Friend opens https://safechat.live/invite/AB12CD34
  * → we remember the code, send them to signup.
  * → the database trigger auto-friends them with the inviter after verification.
  */

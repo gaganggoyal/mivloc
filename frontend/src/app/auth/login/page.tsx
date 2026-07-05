@@ -119,7 +119,7 @@ function AuthInner() {
         </button>
       </p>
       <p className="text-center text-xs text-skyl/50 mt-3">
-        <Link href="/">← Back to safechat.website</Link>
+        <Link href="/">← Back to safechat.live</Link>
       </p>
     </div>
   )

@@ -3,13 +3,13 @@
 India's safest chat app: messages auto-encrypt in 60 seconds, every friend gets
 their own secret code, and one-time chats vanish forever when anyone leaves.
 
-**Live domain:** https://safechat.website
+**Live domain:** https://safechat.live
 
 ## Features
 | Feature | How it works |
 |---|---|
 | **Email-verified accounts** | Supabase Auth sends a verification link; account activates only after clicking it. Phone number is optional. |
-| **Invite links** | Every user gets `safechat.website/invite/CODE`. Friends who sign up through it are auto-connected — a DB trigger creates the friendship. |
+| **Invite links** | Every user gets `safechat.live/invite/CODE`. Friends who sign up through it are auto-connected — a DB trigger creates the friendship. |
 | **Your own code per chat** | Each person chooses their **own** unlock code for every chat (any length — even one digit). PBKDF2 (100k iterations) verifies it on-device; the server stores only a salt + verification blob — never the code. |
 | **Encrypted storage** | Every chat has a random AES-GCM-256 key; messages are encrypted client-side and the database only ever contains `base64(iv‖ciphertext)`. |
 | **60-second auto-lock** | After 1 minute of chatting or idle, the conversation dissolves back into ciphertext on screen. Re-enter the code to unlock. |

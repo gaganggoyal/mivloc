@@ -105,7 +105,7 @@ export default function DemoVideo({ sound = false }: { sound?: boolean }) {
           {s.id === 'invite' && (
             <div className="w-full space-y-3 demo-in">
               <div className="text-4xl mb-1">🔗</div>
-              <div className="bg-navy/80 border border-mint/30 rounded-xl px-3 py-2.5 font-mono text-[10px] text-mint break-all">safechat.website/invite/AB12CD34</div>
+              <div className="bg-navy/80 border border-mint/30 rounded-xl px-3 py-2.5 font-mono text-[10px] text-mint break-all">safechat.live/invite/AB12CD34</div>
               <div className="flex justify-center gap-2 text-xs">
                 <span className="px-3 py-1.5 rounded-lg bg-mint/15 border border-mint/30 text-mint">📱 WhatsApp</span>
                 <span className="px-3 py-1.5 rounded-lg bg-sky/15 border border-sky/30 text-skyl">💬 SMS</span>
@@ -139,7 +139,7 @@ export default function DemoVideo({ sound = false }: { sound?: boolean }) {
           {s.id === 'once' && (
             <div className="w-full space-y-3 demo-in">
               <div className="text-4xl">💨</div>
-              <div className="bg-navy/80 border border-mint/30 rounded-xl px-3 py-2 font-mono text-[10px] text-mint">safechat.website/once/our-secret-room</div>
+              <div className="bg-navy/80 border border-mint/30 rounded-xl px-3 py-2 font-mono text-[10px] text-mint">safechat.live/once/our-secret-room</div>
               <div className="text-xs text-skyl">Someone left the chat…</div>
               <div className="text-xl demo-in-late">🌌 <span className="text-sm text-skyl/70">Lost in space. Nothing was ever stored.</span></div>
             </div>
