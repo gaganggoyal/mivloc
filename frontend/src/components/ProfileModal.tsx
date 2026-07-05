@@ -33,7 +33,10 @@ export default function ProfileModal({ me, onClose, onSaved }: {
           <div><label className="label">Full name</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div><label className="label">Email (verified)</label><input className="input opacity-60" value={me.email} readOnly /></div>
           <div><label className="label">Mobile number (optional)</label><input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" /></div>
-          <div><label className="label">Your referral code</label><input className="input opacity-60 font-mono" value={me.referral_code} readOnly /></div>
+          <div>
+            <label className="label">Your username <span className="text-skyl/50">(friends message you with this)</span></label>
+            <input className="input opacity-60 font-mono" value={me.username ? `@${me.username}` : me.referral_code} readOnly />
+          </div>
           {err && <p className="text-red-400 text-xs">{err}</p>}
           <button className="btn-primary w-full" onClick={save} disabled={busy}>{busy ? 'Saving…' : '💾 Save changes'}</button>
         </div>

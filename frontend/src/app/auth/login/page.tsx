@@ -11,6 +11,8 @@ function AuthInner() {
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signup')
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
+  const [uStatus, setUStatus] = useState<'idle' | 'checking' | 'ok' | 'taken' | 'invalid'>('idle')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -28,18 +30,37 @@ function AuthInner() {
     supabase.auth.getUser().then(({ data }) => { if (data.user) router.replace('/dashboard') })
   }, []) // eslint-disable-line
 
+  // Live username availability check (debounced) while signing up
+  useEffect(() => {
+    if (mode !== 'signup') return
+    const u = username
+    if (!u) { setUStatus('idle'); return }
+    if (!/^[a-z0-9_]{3,20}$/.test(u)) { setUStatus('invalid'); return }
+    setUStatus('checking')
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc('username_available', { u })
+      if (error) { setUStatus('idle'); return } // don't block signup if the check itself fails
+      setUStatus(data ? 'ok' : 'taken')
+    }, 400)
+    return () => clearTimeout(t)
+  }, [username, mode]) // eslint-disable-line
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setErr(''); setBusy(true)
     try {
       if (mode === 'signup') {
         if (!name.trim()) throw new Error('Please enter your name')
+        if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new Error('Pick a username — 3–20 letters, numbers or _ (lowercase)')
         if (password.length < 6) throw new Error('Password must be at least 6 characters')
+        // Final availability check right before we submit
+        const { data: free } = await supabase.rpc('username_available', { u: username })
+        if (free === false) throw new Error(`Username “@${username}” is already taken — pick another`)
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
             emailRedirectTo: `${SITE_URL}/auth/callback`,
-            data: { display_name: name.trim(), phone: phone.trim(), ref: ref.trim() },
+            data: { display_name: name.trim(), username, phone: phone.trim(), ref: ref.trim() },
           },
         })
         if (error) throw error
@@ -52,7 +73,10 @@ function AuthInner() {
       }
     } catch (e: any) {
       const m: string = e?.message || ''
-      if (m.includes('confirmation email') || m.includes('sending')) {
+      if (m.includes('username') || m.includes('duplicate') || m.includes('Database error saving')) {
+        setErr('That username was just taken — please pick another and try again.')
+        setUStatus('taken')
+      } else if (m.includes('confirmation email') || m.includes('sending')) {
         setErr('We could not send the verification email right now — our mail service is being set up. Please try again a little later.')
       } else if (m.includes('already registered')) {
         setErr('This email already has an account — try signing in instead.')
@@ -93,6 +117,31 @@ function AuthInner() {
           <div>
             <label className="label">Full name</label>
             <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+          </div>
+        )}
+        {mode === 'signup' && (
+          <div>
+            <label className="label">Username <span className="text-skyl/50">(friends use this to message you)</span></label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-skyl/60">@</span>
+              <input
+                className="input pl-7"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="yourname"
+                maxLength={20}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                required
+              />
+            </div>
+            <p className="text-xs mt-1 h-4">
+              {uStatus === 'checking' && <span className="text-skyl/60">Checking availability…</span>}
+              {uStatus === 'ok' && <span className="text-mint">✓ @{username} is available</span>}
+              {uStatus === 'taken' && <span className="text-red-400">@{username} is taken — try another</span>}
+              {uStatus === 'invalid' && <span className="text-skyl/60">3–20 characters: lowercase letters, numbers or _</span>}
+            </p>
           </div>
         )}
         <div>

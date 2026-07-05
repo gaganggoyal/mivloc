@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Sidebar from '@/components/Sidebar'
 import InviteCard from '@/components/InviteCard'
+import AddByUsername from '@/components/AddByUsername'
 import ProfileModal from '@/components/ProfileModal'
 import { useSafeChat } from '@/lib/useSafeChat'
 import type { Profile } from '@/types'
@@ -18,7 +19,7 @@ export default function Dashboard() {
 
 /* ── Mobile: clean stacked sections, each with room to breathe ── */
 function MobileDashboard() {
-  const { me, friends, dbErr, inviteLink, shareText, openChat, logout, reload } = useSafeChat()
+  const { me, friends, dbErr, handle, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useSafeChat()
   const [showProfile, setShowProfile] = useState(false)
   const [toast, setToast] = useState('')
   function say(msg: string) { setToast(msg); setTimeout(() => setToast(''), 2600) }
@@ -54,7 +55,14 @@ function MobileDashboard() {
           </section>
         )}
 
-        <InviteCard inviteLink={inviteLink} shareText={shareText} />
+        <InviteCard inviteLink={inviteLink} shareText={shareText} handle={handle} />
+
+        {/* Message someone by username */}
+        <section className="card p-5">
+          <h2 className="font-semibold text-sm mb-1">✉️ Message someone</h2>
+          <p className="text-xs text-skyl/70 mb-3">Know a friend&apos;s username? Type it to start an encrypted chat instantly.</p>
+          <AddByUsername onStart={startChatByUsername} />
+        </section>
 
         {/* Chats */}
         <section className="card p-5">
@@ -101,7 +109,7 @@ function MobileDashboard() {
 
 /* ── Desktop: WhatsApp-style split — chat list left, home panel right ── */
 function DesktopDashboard() {
-  const { me, inviteLink, shareText } = useSafeChat()
+  const { me, handle, inviteLink, shareText } = useSafeChat()
   return (
     <main className="hidden md:flex h-dvh bg-orbs">
       <Sidebar className="w-96 border-r" />
@@ -112,7 +120,7 @@ function DesktopDashboard() {
             <p className="text-sm text-skyl">Invite a friend, then pick them on the left to start chatting.</p>
           </header>
 
-          <InviteCard inviteLink={inviteLink} shareText={shareText} />
+          <InviteCard inviteLink={inviteLink} shareText={shareText} handle={handle} />
 
           <section className="card p-5 flex items-center justify-between gap-4">
             <div>

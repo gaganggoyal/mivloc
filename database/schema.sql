@@ -11,28 +11,47 @@ create table if not exists profiles (
   display_name  text not null,
   email         text not null,
   phone         text,
+  username      text unique,     -- chosen at signup; also the invite/referral handle
   referral_code text unique not null default substr(md5(random()::text), 1, 8),
   invited_by    uuid references auth.users(id),
   created_at    timestamptz default now()
 );
+-- Username migration for installs created before usernames existed (safe to re-run)
+alter table profiles add column if not exists username text unique;
+do $$ begin
+  alter table profiles add constraint username_format
+    check (username is null or username ~ '^[a-z0-9_]{3,20}$');
+exception when duplicate_object then null; end $$;
+-- Backfill legacy accounts so their old invite links still resolve as a handle
+update profiles set username = referral_code where username is null;
 alter table profiles enable row level security;
 create policy "profiles readable by authed" on profiles for select using (auth.role() = 'authenticated');
 create policy "own profile insert" on profiles for insert with check (auth.uid() = id);
 create policy "own profile update" on profiles for update using (auth.uid() = id);
 
--- Auto-create profile on signup; auto-friend the inviter if ref code present
+-- Anon-safe username availability check for the signup form (leaks only yes/no)
+create or replace function username_available(u text) returns boolean
+language sql security definer set search_path = public stable as $$
+  select not exists (select 1 from profiles where lower(username) = lower(u));
+$$;
+grant execute on function username_available(text) to anon, authenticated;
+
+-- Auto-create profile on signup; auto-friend the inviter if ref/handle present
 create or replace function handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare inviter uuid;
+declare inviter uuid; ref text;
 begin
+  ref := coalesce(new.raw_user_meta_data->>'ref', '');
   select p.id into inviter from profiles p
-    where p.referral_code = coalesce(new.raw_user_meta_data->>'ref', '');
-  insert into profiles (id, display_name, email, phone, invited_by)
+    where lower(p.username) = lower(ref) or p.referral_code = ref
+    limit 1;
+  insert into profiles (id, display_name, email, phone, username, invited_by)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email,'@',1)),
     new.email,
     nullif(new.raw_user_meta_data->>'phone',''),
+    nullif(lower(new.raw_user_meta_data->>'username'), ''),
     inviter
   );
   if inviter is not null then

@@ -3,13 +3,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useSafeChat } from '@/lib/useSafeChat'
 import ProfileModal from '@/components/ProfileModal'
+import AddByUsername from '@/components/AddByUsername'
 import type { Profile } from '@/types'
 
 /**
  * WhatsApp-style left panel for desktop: logo, quick actions, chat list.
  */
 export default function Sidebar({ activeChatId = '', className = '' }: { activeChatId?: string; className?: string }) {
-  const { me, friends, chatByFriend, dbErr, inviteLink, shareText, openChat, logout, reload } = useSafeChat()
+  const { me, friends, chatByFriend, dbErr, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useSafeChat()
   const [showProfile, setShowProfile] = useState(false)
   const [toast, setToast] = useState('')
 
@@ -36,6 +37,7 @@ export default function Sidebar({ activeChatId = '', className = '' }: { activeC
 
       {/* Quick actions */}
       <div className="p-3 space-y-2 border-b border-sky/10">
+        <AddByUsername onStart={startChatByUsername} />
         <div className="grid grid-cols-2 gap-2">
           <button className="btn-ghost !py-2 text-xs" onClick={() => { navigator.clipboard.writeText(inviteLink); say('📋 Invite link copied') }} disabled={!inviteLink}>🔗 Copy invite</button>
           <a className="btn-ghost !py-2 text-xs text-center" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}>📱 WhatsApp</a>

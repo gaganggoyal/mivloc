@@ -3,6 +3,7 @@ export interface Profile {
   display_name: string
   email: string
   phone: string | null
+  username: string | null   // unique handle; also the invite/referral code
   referral_code: string
   invited_by: string | null
   created_at: string

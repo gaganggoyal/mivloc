@@ -29,12 +29,14 @@ export function useSafeChat() {
         display_name: meta.display_name || user.email?.split('@')[0] || 'User',
         email: user.email,
         phone: meta.phone || null,
+        username: (meta.username as string)?.toLowerCase() || null,
       }).select().maybeSingle()
       if (createErr) { setDbErr(`Could not create your profile: ${createErr.message}`); setLoading(false); return }
       prof = created
       if (prof && meta.ref) {
+        const ref = String(meta.ref).toLowerCase()
         const { data: inviter } = await supabase.from('profiles')
-          .select('id').eq('referral_code', meta.ref).maybeSingle()
+          .select('id').or(`username.eq.${ref},referral_code.eq.${meta.ref}`).maybeSingle()
         if (inviter && inviter.id !== user.id) {
           const [a, b] = [inviter.id, user.id].sort()
           await supabase.from('friendships').insert({ user_a: a, user_b: b }) // dup errors are fine
@@ -78,13 +80,30 @@ export function useSafeChat() {
     return false
   }
 
+  /** Start (or resume) a chat with a registered user by their username.
+   *  Returns '' on success (we navigate away) or a friendly error message. */
+  async function startChatByUsername(raw: string): Promise<string> {
+    const u = raw.trim().toLowerCase().replace(/^@/, '')
+    if (!u) return 'Enter a username'
+    if (!me) return 'Still loading — try again in a second'
+    if (u === (me.username ?? '').toLowerCase()) return "That's your own username 🙂"
+    const { data: friend } = await supabase.from('profiles').select('*').eq('username', u).maybeSingle()
+    if (!friend) return `No SafeChat user “@${u}” found`
+    // Connect both sides so each sees the other in their chat list.
+    const [a, b] = [me.id, friend.id].sort()
+    await supabase.from('friendships').insert({ user_a: a, user_b: b }) // duplicate is fine
+    const ok = await openChat(friend as Profile)
+    return ok ? '' : 'Could not open the chat — try again'
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     router.replace('/')
   }
 
-  const inviteLink = me ? `${SITE_URL}/invite/${me.referral_code}` : ''
+  const handle = me?.username ?? me?.referral_code ?? ''
+  const inviteLink = handle ? `${SITE_URL}/invite/${handle}` : ''
   const shareText = `🛡️ Join me on SafeChat — India's safest chat app! Messages auto-encrypt in 60 seconds. Use my link: ${inviteLink}`
 
-  return { me, friends, chatByFriend, dbErr, loading, inviteLink, shareText, openChat, logout, reload: load }
+  return { me, friends, chatByFriend, dbErr, loading, handle, inviteLink, shareText, openChat, startChatByUsername, logout, reload: load }
 }
