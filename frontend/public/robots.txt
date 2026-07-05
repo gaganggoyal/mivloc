@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /chat/
+Disallow: /once/
+Disallow: /dashboard
+Sitemap: https://safechat.website/sitemap.xml

@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+*.log
+android/
+ios/
+.DS_Store
+*.tsbuildinfo
