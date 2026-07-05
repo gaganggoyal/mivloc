@@ -55,7 +55,6 @@ const jsonLd = {
   operatingSystem: 'Web, Android',
   description: 'Secure messaging with 60-second auto-encryption, password-protected chats and one-time vanishing chat links.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
-  aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.8', ratingCount: '1240' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
