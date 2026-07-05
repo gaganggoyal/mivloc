@@ -24,9 +24,9 @@ export default function AddByUsername({ onStart }: { onStart: (u: string) => Pro
     <form onSubmit={go}>
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-skyl/60">@</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-skyl/60 pointer-events-none">@</span>
           <input
-            className="input pl-7 !py-2 text-sm"
+            className="input !pl-8 !py-2 text-sm"
             value={u}
             onChange={(e) => setU(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
             placeholder="friend's username"

@@ -123,9 +123,9 @@ function AuthInner() {
           <div>
             <label className="label">Username <span className="text-skyl/50">(friends use this to message you)</span></label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-skyl/60">@</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-skyl/60 pointer-events-none">@</span>
               <input
-                className="input pl-7"
+                className="input !pl-8"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                 placeholder="yourname"
