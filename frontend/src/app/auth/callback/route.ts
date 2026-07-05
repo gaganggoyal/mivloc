@@ -9,6 +9,9 @@ export async function GET(request: Request) {
   const tokenHash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/dashboard'
+  // Behind Docker/Caddy the request origin is the internal address
+  // (0.0.0.0:3000) — always redirect to the public site instead.
+  const site = process.env.NEXT_PUBLIC_SITE_URL || origin
 
   const cookieStore = cookies()
   const supabase = createServerClient(
@@ -25,12 +28,12 @@ export async function GET(request: Request) {
   // token_hash form: works no matter which browser/device opens the email link
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
+    if (!error) return NextResponse.redirect(`${site}${next}`)
   }
   // PKCE code form: used when the link opens in the same browser that signed up
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
+    if (!error) return NextResponse.redirect(`${site}${next}`)
   }
-  return NextResponse.redirect(`${origin}/auth/login?error=verify`)
+  return NextResponse.redirect(`${site}/auth/login?error=verify`)
 }

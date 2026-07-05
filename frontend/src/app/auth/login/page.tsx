@@ -51,7 +51,16 @@ function AuthInner() {
         router.replace(params.get('next') || '/dashboard')
       }
     } catch (e: any) {
-      setErr(e.message || 'Something went wrong')
+      const m: string = e?.message || ''
+      if (m.includes('confirmation email') || m.includes('sending')) {
+        setErr('We could not send the verification email right now — our mail service is being set up. Please try again a little later.')
+      } else if (m.includes('already registered')) {
+        setErr('This email already has an account — try signing in instead.')
+      } else if (m.startsWith('{') || !m) {
+        setErr('Something went wrong on our side. Please try again in a few minutes.')
+      } else {
+        setErr(m)
+      }
     } finally {
       setBusy(false)
     }
