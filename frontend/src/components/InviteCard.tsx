@@ -31,7 +31,7 @@ export default function InviteCard({ inviteLink, shareText, handle = '' }: { inv
       <div className="grid grid-cols-4 gap-2">
         <a className="btn-ghost !py-2 !px-1 text-xs" target="_blank" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}>📱<span className="hidden sm:inline"> WhatsApp</span></a>
         <a className="btn-ghost !py-2 !px-1 text-xs" href={`sms:?body=${encodeURIComponent(shareText)}`}>💬<span className="hidden sm:inline"> SMS</span></a>
-        <a className="btn-ghost !py-2 !px-1 text-xs" href={`mailto:?subject=${encodeURIComponent('Join me on SafeChat')}&body=${encodeURIComponent(shareText)}`}>📧<span className="hidden sm:inline"> Email</span></a>
+        <a className="btn-ghost !py-2 !px-1 text-xs" href={`mailto:?subject=${encodeURIComponent('Join me on Mivloc')}&body=${encodeURIComponent(shareText)}`}>📧<span className="hidden sm:inline"> Email</span></a>
         <button className="btn-ghost !py-2 !px-1 text-xs" onClick={copy}>📋<span className="hidden sm:inline"> Copy</span></button>
       </div>
     </section>

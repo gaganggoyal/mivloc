@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import InviteCard from '@/components/InviteCard'
 import AddByUsername from '@/components/AddByUsername'
 import ProfileModal from '@/components/ProfileModal'
-import { useSafeChat } from '@/lib/useSafeChat'
+import { useMivloc } from '@/lib/useMivloc'
 import type { Profile } from '@/types'
 
 export default function Dashboard() {
@@ -19,7 +19,7 @@ export default function Dashboard() {
 
 /* ── Mobile: clean stacked sections, each with room to breathe ── */
 function MobileDashboard() {
-  const { me, friends, dbErr, handle, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useSafeChat()
+  const { me, friends, dbErr, handle, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useMivloc()
   const [showProfile, setShowProfile] = useState(false)
   const [toast, setToast] = useState('')
   function say(msg: string) { setToast(msg); setTimeout(() => setToast(''), 2600) }
@@ -34,7 +34,7 @@ function MobileDashboard() {
       <nav className="sticky top-0 z-40 flex items-center justify-between px-5 py-3 bg-navy/85 backdrop-blur-xl border-b border-sky/20">
         <div className="flex items-center gap-2 font-extrabold">
           <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-lg">🛡️</span>
-          <span className="bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">SafeChat</span>
+          <span className="bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">Mivloc</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="btn-ghost !px-3 !py-2 text-xs" onClick={() => setShowProfile(true)}>⚙️</button>
@@ -109,7 +109,7 @@ function MobileDashboard() {
 
 /* ── Desktop: WhatsApp-style split — chat list left, home panel right ── */
 function DesktopDashboard() {
-  const { me, handle, inviteLink, shareText } = useSafeChat()
+  const { me, handle, inviteLink, shareText } = useMivloc()
   return (
     <main className="hidden md:flex h-dvh bg-orbs">
       <Sidebar className="w-96 border-r" />

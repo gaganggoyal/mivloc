@@ -1,6 +1,6 @@
 {
-  "name": "SafeChat — Secure Encrypted Messaging",
-  "short_name": "SafeChat",
+  "name": "Mivloc — Secure Encrypted Messaging",
+  "short_name": "Mivloc",
   "description": "Messages auto-encrypt in 60 seconds. Password-protected chats. One-time links that vanish.",
   "start_url": "/",
   "display": "standalone",

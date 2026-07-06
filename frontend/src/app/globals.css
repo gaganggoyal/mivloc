@@ -50,7 +50,7 @@ body {
 }
 .label { @apply block text-xs font-medium text-skyl mb-1.5; }
 
-/* Message lock dissolve — the SafeChat signature */
+/* Message lock dissolve — the Mivloc signature */
 @keyframes dissolve {
   0%   { filter: blur(0);   opacity: 1 }
   60%  { filter: blur(3px); opacity: .75 }

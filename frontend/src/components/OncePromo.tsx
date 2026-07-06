@@ -5,7 +5,7 @@ import Link from 'next/link'
 /**
  * Desktop-only advertisement shown beside the one-time chat column.
  * Fills the empty half of wide screens with a live demo of the 60-second
- * self-destructing encryption you get with a free SafeChat account.
+ * self-destructing encryption you get with a free Mivloc account.
  */
 export default function OncePromo() {
   const [locked, setLocked] = useState(false)
@@ -24,7 +24,7 @@ export default function OncePromo() {
       <div className="relative max-w-md w-full">
         <div className="flex items-center gap-2.5 mb-7">
           <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-2xl shadow-[0_0_30px_rgba(14,165,233,.5)]">🛡️</span>
-          <span className="text-2xl font-extrabold bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">SafeChat</span>
+          <span className="text-2xl font-extrabold bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">Mivloc</span>
         </div>
 
         <h2 className="text-[28px] leading-tight font-bold mb-3">

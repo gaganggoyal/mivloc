@@ -136,7 +136,7 @@ export default function OneTimeRoom() {
         <p className="text-sm text-skyl mb-6">Someone left the room, so every message was destroyed — nothing was ever saved to any server.</p>
         <div className="grid grid-cols-2 gap-2">
           <Link href="/once" className="btn-primary text-xs !py-2.5">New one-time chat</Link>
-          <Link href="/" className="btn-ghost text-xs !py-2.5">SafeChat home</Link>
+          <Link href="/" className="btn-ghost text-xs !py-2.5">Mivloc home</Link>
         </div>
       </div>
     </Center>

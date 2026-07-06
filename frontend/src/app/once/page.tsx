@@ -38,7 +38,7 @@ export default function CreateOneTime() {
   }, [slug]) // eslint-disable-line
 
   const link = `${SITE_URL}/once/${slug.trim().toLowerCase()}`
-  const shareText = `💨 Join my one-time SafeChat — it vanishes forever when either of us leaves: ${link}`
+  const shareText = `💨 Join my one-time Mivloc chat — it vanishes forever when either of us leaves: ${link}`
 
   async function create() {
     const s = slug.trim().toLowerCase()
@@ -66,7 +66,7 @@ export default function CreateOneTime() {
 
           <label className="label">Choose your link name</label>
           <div className="flex items-center gap-0 mb-1">
-            <span className="px-3 py-3 rounded-l-xl bg-navy2 border border-r-0 border-sky/20 text-xs text-skyl/60 font-mono whitespace-nowrap">safechat.live/once/</span>
+            <span className="px-3 py-3 rounded-l-xl bg-navy2 border border-r-0 border-sky/20 text-xs text-skyl/60 font-mono whitespace-nowrap">mivloc.online/once/</span>
             <input className="input !rounded-l-none font-mono" value={slug}
               onChange={(e) => setSlug(e.target.value.toLowerCase())}
               placeholder="my-secret-room" autoFocus />
@@ -86,7 +86,7 @@ export default function CreateOneTime() {
           <button className="btn-primary w-full py-3" onClick={create} disabled={busy || status !== 'free'}>
             {busy ? 'Creating…' : '💨 Create vanishing chat'}
           </button>
-          <p className="text-center text-xs text-skyl/50 mt-4"><Link href="/">← safechat.live</Link></p>
+          <p className="text-center text-xs text-skyl/50 mt-4"><Link href="/">← mivloc.online</Link></p>
         </>) : (<>
           <div className="text-center mb-5">
             <div className="text-4xl mb-2">✅</div>

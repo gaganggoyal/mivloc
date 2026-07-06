@@ -1,22 +1,22 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://safechat.live'
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://mivloc.online'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'SafeChat - India\'s Most Secure Chat App | Auto-Encrypt in 60s',
-    template: '%s | SafeChat',
+    default: 'Mivloc - India\'s Most Secure Chat App | Auto-Encrypt in 60s',
+    template: '%s | Mivloc',
   },
   description:
-    'SafeChat - India\'s safest messaging app with auto-encryption in 60 seconds. Password-protected conversations. One-time anonymous chats that vanish. Your safety, our priority.',
+    'Mivloc - India\'s safest messaging app with auto-encryption in 60 seconds. Password-protected conversations. One-time anonymous chats that vanish. Your safety, our priority.',
   keywords: [
     'safe chat', 'secure messaging', 'encrypted chat India', 'self-destructing messages',
-    'anonymous chat', 'private messaging', 'safechat', 'one time chat link',
+    'anonymous chat', 'private messaging', 'mivloc', 'one time chat link',
     'password protected chat', 'disappearing messages app',
   ],
-  authors: [{ name: 'SafeChat' }],
+  authors: [{ name: 'Mivloc' }],
   robots: { index: true, follow: true },
   alternates: { canonical: SITE },
   manifest: '/manifest.json',
@@ -25,17 +25,17 @@ export const metadata: Metadata = {
     apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
-    title: 'SafeChat - Chat Safely. Stay Protected.',
+    title: 'Mivloc - Chat Safely. Stay Protected.',
     description:
       'India\'s safest chat app. Messages auto-encrypt in 60s. Password-protected chats. One-time links that vanish when anyone leaves.',
     url: SITE,
-    siteName: 'SafeChat',
+    siteName: 'Mivloc',
     type: 'website',
     locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SafeChat - Safe & Secure Messaging',
+    title: 'Mivloc - Safe & Secure Messaging',
     description: 'Chat safely. Messages auto-encrypt in 60s. Your safety, our priority.',
   },
 }
@@ -50,7 +50,7 @@ export const viewport: Viewport = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'SafeChat',
+  name: 'Mivloc',
   applicationCategory: 'CommunicationApplication',
   operatingSystem: 'Web, Android',
   description: 'Secure messaging with 60-second auto-encryption, password-protected chats and one-time vanishing chat links.',

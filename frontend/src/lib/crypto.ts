@@ -1,5 +1,5 @@
 /**
- * SafeChat client-side encryption.
+ * Mivloc client-side encryption.
  * Each chat has a random AES-GCM-256 key; messages are stored ONLY as
  * base64(iv || ciphertext). Each user additionally sets a personal unlock
  * code per chat: PBKDF2 turns it into a verification key so the app can
@@ -9,7 +9,7 @@
 const enc = new TextEncoder()
 const dec = new TextDecoder()
 
-export const CODE_CHECK_PLAINTEXT = 'SAFECHAT_OK'
+export const CODE_CHECK_PLAINTEXT = 'MIVLOC_OK'
 
 function b64(buf: ArrayBuffer | Uint8Array): string {
   const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf)

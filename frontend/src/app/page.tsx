@@ -17,7 +17,7 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 bg-navy/85 backdrop-blur-xl border-b border-sky/20">
         <div className="flex items-center gap-2.5 font-extrabold text-xl">
           <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-xl shadow-[0_0_25px_rgba(14,165,233,.5)]">🛡️</span>
-          <span className="bg-gradient-to-r from-mint via-ice to-skyl bg-clip-text text-transparent">SafeChat</span>
+          <span className="bg-gradient-to-r from-mint via-ice to-skyl bg-clip-text text-transparent">Mivloc</span>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/once" className="btn-ghost hidden sm:inline-flex">One-time chat</Link>
@@ -101,7 +101,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-sky/10 px-6 py-8 text-center text-xs text-skyl/50">
-        <p>🛡️ SafeChat · safechat.live · Chat Safely. Stay Protected.</p>
+        <p>🛡️ Mivloc · mivloc.online · Chat Safely. Stay Protected.</p>
         <p className="mt-1">End-to-end encrypted · Messages auto-lock in 60s · One-time chats vanish forever</p>
       </footer>
     </div>

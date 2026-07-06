@@ -6,7 +6,7 @@ import type { Profile } from '@/types'
 
 /** Loads the signed-in user, their friends and chat ids; shared by
  *  the sidebar and the dashboard so the logic lives in one place. */
-export function useSafeChat() {
+export function useMivloc() {
   const supabase = supabaseBrowser()
   const router = useRouter()
   const [me, setMe] = useState<Profile | null>(null)
@@ -88,7 +88,7 @@ export function useSafeChat() {
     if (!me) return 'Still loading — try again in a second'
     if (u === (me.username ?? '').toLowerCase()) return "That's your own username 🙂"
     const { data: friend } = await supabase.from('profiles').select('*').eq('username', u).maybeSingle()
-    if (!friend) return `No SafeChat user “@${u}” found`
+    if (!friend) return `No Mivloc user “@${u}” found`
     // Connect both sides so each sees the other in their chat list.
     const [a, b] = [me.id, friend.id].sort()
     await supabase.from('friendships').insert({ user_a: a, user_b: b }) // duplicate is fine
@@ -103,7 +103,7 @@ export function useSafeChat() {
 
   const handle = me?.username ?? me?.referral_code ?? ''
   const inviteLink = handle ? `${SITE_URL}/invite/${handle}` : ''
-  const shareText = `🛡️ Join me on SafeChat — India's safest chat app! Messages auto-encrypt in 60 seconds. Use my link: ${inviteLink}`
+  const shareText = `🛡️ Join me on Mivloc — India's safest chat app! Messages auto-encrypt in 60 seconds. Use my link: ${inviteLink}`
 
   return { me, friends, chatByFriend, dbErr, loading, handle, inviteLink, shareText, openChat, startChatByUsername, logout, reload: load }
 }

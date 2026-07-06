@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useSafeChat } from '@/lib/useSafeChat'
+import { useMivloc } from '@/lib/useMivloc'
 import ProfileModal from '@/components/ProfileModal'
 import AddByUsername from '@/components/AddByUsername'
 import type { Profile } from '@/types'
@@ -10,7 +10,7 @@ import type { Profile } from '@/types'
  * WhatsApp-style left panel for desktop: logo, quick actions, chat list.
  */
 export default function Sidebar({ activeChatId = '', className = '' }: { activeChatId?: string; className?: string }) {
-  const { me, friends, chatByFriend, dbErr, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useSafeChat()
+  const { me, friends, chatByFriend, dbErr, inviteLink, shareText, openChat, startChatByUsername, logout, reload } = useMivloc()
   const [showProfile, setShowProfile] = useState(false)
   const [toast, setToast] = useState('')
 
@@ -27,7 +27,7 @@ export default function Sidebar({ activeChatId = '', className = '' }: { activeC
       <div className="flex items-center justify-between px-4 py-3 border-b border-sky/15">
         <Link href="/dashboard" className="flex items-center gap-2 font-extrabold">
           <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-lg">🛡️</span>
-          <span className="bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">SafeChat</span>
+          <span className="bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">Mivloc</span>
         </Link>
         <div className="flex items-center gap-1">
           <button className="btn-ghost !px-2.5 !py-1.5 text-xs" onClick={() => setShowProfile(true)} title="Account settings">⚙️</button>

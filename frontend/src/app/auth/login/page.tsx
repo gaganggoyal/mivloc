@@ -96,7 +96,7 @@ function AuthInner() {
       <h1 className="text-xl font-bold mb-2">Verify your email</h1>
       <p className="text-sm text-skyl leading-relaxed mb-6">
         We sent a verification link to <span className="text-mint font-medium">{email}</span>.
-        Open it to activate your SafeChat account — then you land straight in your dashboard.
+        Open it to activate your Mivloc account — then you land straight in your dashboard.
       </p>
       <button className="btn-ghost w-full" onClick={() => setSent(false)}>← Use a different email</button>
     </div>
@@ -106,7 +106,7 @@ function AuthInner() {
     <div className="card p-8 max-w-md w-full">
       <div className="text-center mb-6">
         <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-3xl shadow-[0_0_25px_rgba(14,165,233,.5)]">🛡️</div>
-        <h1 className="text-xl font-bold">{mode === 'signup' ? 'Create your SafeChat account' : 'Welcome back'}</h1>
+        <h1 className="text-xl font-bold">{mode === 'signup' ? 'Create your Mivloc account' : 'Welcome back'}</h1>
         <p className="text-xs text-skyl mt-1">
           {mode === 'signup' ? 'Verified by email · phone optional' : 'Sign in to your encrypted chats'}
         </p>
@@ -171,13 +171,13 @@ function AuthInner() {
       </form>
 
       <p className="text-center text-xs text-skyl mt-5">
-        {mode === 'signup' ? 'Already have an account?' : 'New to SafeChat?'}{' '}
+        {mode === 'signup' ? 'Already have an account?' : 'New to Mivloc?'}{' '}
         <button className="text-mint font-semibold" onClick={() => { setMode(mode === 'signup' ? 'signin' : 'signup'); setErr('') }}>
           {mode === 'signup' ? 'Sign in' : 'Create one free'}
         </button>
       </p>
       <p className="text-center text-xs text-skyl/50 mt-3">
-        <Link href="/">← Back to safechat.live</Link>
+        <Link href="/">← Back to mivloc.online</Link>
       </p>
     </div>
   )

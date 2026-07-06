@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════
--- SafeChat — Supabase Schema
+-- Mivloc — Supabase Schema
 -- Run once in Supabase SQL Editor.
 -- Then: Authentication → Providers → Email → enable "Confirm email"
 -- ════════════════════════════════════════════════════════════
