@@ -56,6 +56,9 @@ function AuthInner() {
         // Final availability check right before we submit
         const { data: free } = await supabase.rpc('username_available', { u: username })
         if (free === false) throw new Error(`Username “@${username}” is already taken — pick another`)
+        // Block a duplicate registration with the same email up-front
+        const { data: emailFree } = await supabase.rpc('email_available', { e: email.trim() })
+        if (emailFree === false) throw new Error('This email already has an account — try signing in instead.')
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
@@ -73,13 +76,13 @@ function AuthInner() {
       }
     } catch (e: any) {
       const m: string = e?.message || ''
-      if (m.includes('username') || m.includes('duplicate') || m.includes('Database error saving')) {
+      if (m.includes('email_already_registered') || m.includes('already registered') || m.includes('already has an account')) {
+        setErr('This email already has an account — try signing in instead.')
+      } else if (m.includes('username') || m.includes('duplicate') || m.includes('Database error saving')) {
         setErr('That username was just taken — please pick another and try again.')
         setUStatus('taken')
       } else if (m.includes('confirmation email') || m.includes('sending')) {
         setErr('We could not send the verification email right now — our mail service is being set up. Please try again a little later.')
-      } else if (m.includes('already registered')) {
-        setErr('This email already has an account — try signing in instead.')
       } else if (m.startsWith('{') || !m) {
         setErr('Something went wrong on our side. Please try again in a few minutes.')
       } else {

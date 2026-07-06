@@ -24,6 +24,10 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 -- Backfill legacy accounts so their old invite links still resolve as a handle
 update profiles set username = referral_code where username is null;
+-- One account per email address (case-insensitive). This is the hard guarantee:
+-- even if Supabase auth ever creates a second auth.users row for an email, the
+-- profile insert in handle_new_user() below will fail, so the signup can't complete.
+create unique index if not exists profiles_email_lower_key on profiles (lower(email));
 alter table profiles enable row level security;
 create policy "profiles readable by authed" on profiles for select using (auth.role() = 'authenticated');
 create policy "own profile insert" on profiles for insert with check (auth.uid() = id);
@@ -36,11 +40,24 @@ language sql security definer set search_path = public stable as $$
 $$;
 grant execute on function username_available(text) to anon, authenticated;
 
+-- Anon-safe email availability check so the signup form can stop a duplicate
+-- registration up-front with a clear message (returns yes/no only).
+create or replace function email_available(e text) returns boolean
+language sql security definer set search_path = public stable as $$
+  select not exists (select 1 from profiles where lower(email) = lower(e));
+$$;
+grant execute on function email_available(text) to anon, authenticated;
+
 -- Auto-create profile on signup; auto-friend the inviter if ref/handle present
 create or replace function handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare inviter uuid; ref text;
 begin
+  -- Reject a second signup with an email that already has an account.
+  if exists (select 1 from profiles where lower(email) = lower(new.email)) then
+    raise exception 'email_already_registered'
+      using errcode = 'unique_violation';
+  end if;
   ref := coalesce(new.raw_user_meta_data->>'ref', '');
   select p.id into inviter from profiles p
     where lower(p.username) = lower(ref) or p.referral_code = ref

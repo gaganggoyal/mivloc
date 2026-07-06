@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import ThemeToggle from '@/components/ThemeToggle'
+
+// Runs before first paint so the saved theme is applied with no flash of the
+// wrong colors. Falls back to the OS preference when nothing is saved yet.
+const themeInit = `(function(){try{var t=localStorage.getItem('mv_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://mivloc.online'
 
@@ -59,8 +64,9 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -69,7 +75,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   )
 }

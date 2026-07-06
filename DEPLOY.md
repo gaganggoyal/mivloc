@@ -5,7 +5,10 @@
    production project is cleaner).
 2. **SQL Editor** → run `database/schema.sql` (idempotent for tables/grants;
    on a re-run you may see "policy already exists" errors — those are harmless).
-3. **Authentication → Providers → Email** → enable **Confirm email** (this enforces email verification)
+3. **Authentication → Providers → Email** → enable **Confirm email** (this enforces email verification).
+   Also enable **"Prevent duplicate sign-ups with the same email"** (Auth settings) so the
+   auth layer rejects a repeat registration. The DB in `schema.sql` already enforces
+   one-account-per-email as a hard backstop, but turning this on gives a cleaner error.
 4. **Authentication → URL Configuration**:
    - Site URL: `https://mivloc.online`
    - Redirect URLs: `https://mivloc.online/auth/callback`

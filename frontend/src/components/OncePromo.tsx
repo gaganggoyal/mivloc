@@ -16,7 +16,7 @@ export default function OncePromo() {
 
   return (
     <aside className="hidden lg:flex lg:w-1/2 relative overflow-hidden border-r border-sky/15
-      bg-gradient-to-br from-navy via-navy2 to-[#06152a] flex-col items-center justify-center px-14">
+      bg-gradient-to-br from-navy via-navy2 to-navy flex-col items-center justify-center px-14">
       {/* soft glow orbs */}
       <div className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-sky/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-mint/15 blur-3xl" />
