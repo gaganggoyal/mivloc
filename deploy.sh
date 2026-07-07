@@ -18,6 +18,7 @@ echo "▸ Verifying local build…"
 # 2. Ship the code (no node_modules/.next/.git — server builds its own)
 echo "▸ Syncing code to ${SERVER}…"
 rsync -az --delete --exclude node_modules --exclude .next --exclude .git \
+  --exclude .env.local --exclude .claude \
   ./ "$SERVER:$REMOTE_DIR/"
 scp -q frontend/.env.local "$SERVER:$REMOTE_DIR/frontend/.env.build"
 
