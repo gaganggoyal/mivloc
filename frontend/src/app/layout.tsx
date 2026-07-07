@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import ThemeToggle from '@/components/ThemeToggle'
+import { FAQ } from '@/lib/faq'
 
 // Runs before first paint so the saved theme is applied with no flash of the
 // wrong colors. Falls back to the OS preference when nothing is saved yet.
@@ -11,37 +12,65 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://mivloc.online'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'Mivloc - India\'s Most Secure Chat App | Auto-Encrypt in 60s',
-    template: '%s | Mivloc',
+    default: 'Mivloc — World\'s Safest Secret Chat App | Auto-Encrypt in 60s',
+    template: '%s | Mivloc — Safe Secret Chat',
   },
   description:
-    'Mivloc - India\'s safest messaging app with auto-encryption in 60 seconds. Password-protected conversations. One-time anonymous chats that vanish. Your safety, our priority.',
+    'Mivloc is the world\'s safest secret chat app. Messages auto-encrypt into AES-256 ciphertext in 60 seconds, every friend gets a private secret code, and one-time chats vanish forever the moment anyone leaves. Free, email-verified, no phone number required.',
+  applicationName: 'Mivloc',
   keywords: [
-    'safe chat', 'secure messaging', 'encrypted chat India', 'self-destructing messages',
-    'anonymous chat', 'private messaging', 'mivloc', 'one time chat link',
-    'password protected chat', 'disappearing messages app',
+    'safe chat', 'secret chat', 'secure messaging app', 'encrypted chat', 'end-to-end encrypted chat',
+    'self-destructing messages', 'disappearing messages app', 'anonymous chat', 'private messaging',
+    'mivloc', 'one time chat link', 'password protected chat', 'vanishing messages',
+    'secret messaging app', 'safest chat app', 'private chat online', 'encrypted messenger',
+    'confidential chat', 'AES-256 chat', 'no trace chat',
   ],
-  authors: [{ name: 'Mivloc' }],
-  robots: { index: true, follow: true },
-  alternates: { canonical: SITE },
+  authors: [{ name: 'Mivloc', url: SITE }],
+  creator: 'Mivloc',
+  publisher: 'Mivloc',
+  category: 'Communication',
+  referrer: 'origin-when-cross-origin',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  alternates: { canonical: '/' },
   manifest: '/manifest.json',
+  formatDetection: { telephone: false, email: false, address: false },
+  appleWebApp: {
+    capable: true,
+    title: 'Mivloc',
+    statusBarStyle: 'black-translucent',
+  },
   icons: {
     icon: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
     apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
-    title: 'Mivloc - Chat Safely. Stay Protected.',
+    title: 'Mivloc — World\'s Safest Secret Chat App',
     description:
-      'India\'s safest chat app. Messages auto-encrypt in 60s. Password-protected chats. One-time links that vanish when anyone leaves.',
+      'The safest secret chat on the internet. Messages auto-encrypt in 60s, a secret code for every friend, and one-time chats that vanish the moment anyone leaves.',
     url: SITE,
     siteName: 'Mivloc',
     type: 'website',
-    locale: 'en_IN',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mivloc - Safe & Secure Messaging',
-    description: 'Chat safely. Messages auto-encrypt in 60s. Your safety, our priority.',
+    title: 'Mivloc — World\'s Safest Secret Chat App',
+    description: 'Chat safely. Messages auto-encrypt in 60s. A secret code for every friend. One-time chats vanish forever.',
+    creator: '@mivloc',
+  },
+  verification: {
+    // Add your verification tokens here once you claim the property:
+    // google: 'your-google-site-verification-token',
   },
 }
 
@@ -54,12 +83,53 @@ export const viewport: Viewport = {
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'Mivloc',
-  applicationCategory: 'CommunicationApplication',
-  operatingSystem: 'Web, Android',
-  description: 'Secure messaging with 60-second auto-encryption, password-protected chats and one-time vanishing chat links.',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE}/#organization`,
+      name: 'Mivloc',
+      url: SITE,
+      logo: `${SITE}/icons/icon-512.png`,
+      description: 'Mivloc is the world\'s safest secret chat app — messages auto-encrypt in 60 seconds and one-time chats vanish forever.',
+      sameAs: [] as string[],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE}/#website`,
+      url: SITE,
+      name: 'Mivloc',
+      description: 'World\'s safest secret chat app. Auto-encrypt in 60 seconds, a secret code for every friend, one-time vanishing chats.',
+      publisher: { '@id': `${SITE}/#organization` },
+      inLanguage: 'en',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${SITE}/#app`,
+      name: 'Mivloc',
+      applicationCategory: 'CommunicationApplication',
+      operatingSystem: 'Web, Android, iOS',
+      url: SITE,
+      description: 'Secure secret messaging with 60-second AES-256 auto-encryption, a private secret code for every friend, and one-time chat links that vanish the moment anyone leaves.',
+      publisher: { '@id': `${SITE}/#organization` },
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: [
+        'Auto-encrypt every chat in 60 seconds',
+        'A private secret code for each friend',
+        'One-time chats that vanish forever',
+        'End-to-end AES-256 encryption',
+        'Email-verified accounts, no phone number required',
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${SITE}/#faq`,
+      mainEntity: FAQ.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

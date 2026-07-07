@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import WatchDemo from '@/components/WatchDemo'
+import { FAQ } from '@/lib/faq'
 
 const FEATURES = [
   { icon: '⏱️', title: 'Auto-encrypt in 60 seconds', desc: 'Every conversation dissolves into AES-256 ciphertext after one minute of chatting or idle time. Re-enter your chat code to unlock.' },
@@ -87,6 +88,27 @@ export default function Landing() {
               <div className="font-semibold mb-1.5">{f.title}</div>
               <p className="text-sm text-skyl/80 leading-relaxed">{f.desc}</p>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ — visible content that mirrors the FAQPage JSON-LD in layout */}
+      <section className="px-6 pb-24">
+        <h2 className="text-center text-2xl sm:text-3xl font-bold mb-3">
+          Frequently asked <span className="text-mint">questions</span>
+        </h2>
+        <p className="text-center text-skyl/70 text-sm mb-10 max-w-xl mx-auto">
+          Everything you need to know about the safest secret chat app in the world.
+        </p>
+        <div className="max-w-3xl mx-auto space-y-3">
+          {FAQ.map((f) => (
+            <details key={f.q} className="card p-5 group">
+              <summary className="cursor-pointer list-none font-semibold flex items-center justify-between gap-4">
+                <span>{f.q}</span>
+                <span className="text-mint transition-transform group-open:rotate-45 shrink-0">＋</span>
+              </summary>
+              <p className="text-sm text-skyl/80 leading-relaxed mt-3">{f.a}</p>
+            </details>
           ))}
         </div>
       </section>

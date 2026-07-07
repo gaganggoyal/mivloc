@@ -3,4 +3,7 @@ Allow: /
 Disallow: /chat/
 Disallow: /once/
 Disallow: /dashboard
+Disallow: /invite/
+Disallow: /auth/callback
+
 Sitemap: https://mivloc.online/sitemap.xml
