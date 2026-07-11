@@ -8,6 +8,16 @@ import type { Chat, DbMessage, Profile, UiMessage } from '@/types'
 
 const LOCK_MS = 60_000 // the whole conversation re-encrypts 60s after unlock
 
+/** "Today", "Yesterday", or e.g. "8 Jul 2026" for the day-separator chips. */
+function dayLabel(d: Date) {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 /** My personal code slot on the chat row (each user has their own). */
 function myCodeCols(c: Chat, meId: string) {
   return meId === c.user_a
@@ -247,25 +257,36 @@ export default function ChatPage() {
               <p className="text-sm text-skyl">Say hello — every message is encrypted before it leaves your device.</p>
             </div>
           )}
-          {msgs.map((m) => {
+          {msgs.map((m, i) => {
             const mine = m.sender_id === meId
             const showCipher = locked || m.plaintext === null
+            const sent = new Date(m.created_at)
+            const newDay = i === 0 || new Date(msgs[i - 1].created_at).toDateString() !== sent.toDateString()
             return (
-              <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[78%] md:max-w-[60%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${showCipher ? 'msg-locking bg-navy2/70 border border-red-500/20' : mine ? 'bg-gradient-to-br from-sky to-mint text-white rounded-br-md' : 'bg-card border border-sky/15 rounded-bl-md'}`}>
-                  {showCipher ? (
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-red-300 mb-1">🔒 Encrypted</div>
-                      <div className="cipher">{m.ciphertext.slice(0, 64)}…</div>
-                    </div>
-                  ) : (
-                    <>
-                      <div>{m.plaintext}</div>
-                      <div className={`text-[10px] mt-1 ${mine ? 'text-white/70' : 'text-skyl/50'}`}>
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <div key={m.id}>
+                {newDay && (
+                  <div className="flex justify-center py-2">
+                    <span className="text-[10px] px-3 py-1 rounded-full bg-navy2/80 border border-sky/15 text-skyl/60">
+                      {dayLabel(sent)}
+                    </span>
+                  </div>
+                )}
+                <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[78%] md:max-w-[60%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${showCipher ? 'msg-locking bg-navy2/70 border border-red-500/20' : mine ? 'bg-gradient-to-br from-sky to-mint text-white rounded-br-md' : 'bg-card border border-sky/15 rounded-bl-md'}`}>
+                    {showCipher ? (
+                      <div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-red-300 mb-1">🔒 Encrypted</div>
+                        <div className="cipher">{m.ciphertext.slice(0, 64)}…</div>
                       </div>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <div>{m.plaintext}</div>
+                        <div className={`text-[10px] mt-1 ${mine ? 'text-white/70' : 'text-skyl/50'}`}>
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             )
