@@ -107,5 +107,12 @@ body {
 .demo-in-late  { animation: demoIn .5s ease .9s both }
 .demo-in-later { animation: demoIn .5s ease 1.8s both }
 
+/* Legal pages (terms / privacy / cookies) */
+.legal h2 { @apply text-lg font-bold mt-8 mb-3 first:mt-0; }
+.legal p { @apply text-sm text-skyl/90 leading-relaxed mb-3 last:mb-0; }
+.legal ul { @apply list-disc pl-5 space-y-1.5 text-sm text-skyl/90 leading-relaxed mb-3; }
+.legal a { @apply text-mint hover:underline; }
+.legal strong { @apply text-ice font-semibold; }
+
 ::-webkit-scrollbar { width: 8px; height: 8px }
 ::-webkit-scrollbar-thumb { background: rgba(14,165,233,.3); border-radius: 4px }

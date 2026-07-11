@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import WatchDemo from '@/components/WatchDemo'
+import SiteFooter from '@/components/SiteFooter'
 import { FAQ } from '@/lib/faq'
 
 const FEATURES = [
@@ -39,9 +40,9 @@ export default function Landing() {
             </span>
           </h1>
           <p className="text-skyl text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-8">
-            End-to-end encrypted chats with a secret code for every friend, and
-            one-time conversations that vanish the moment anyone leaves.
-            Nothing readable is ever stored.
+            Mivloc is a secret chat app with end-to-end encryption, a secret
+            code for every friend, and one-time conversations that vanish the
+            moment anyone leaves. Nothing readable is ever stored.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
             <Link href="/auth/login" className="btn-primary text-base px-7 py-3.5">🛡️ Create free account</Link>
@@ -122,10 +123,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-sky/10 px-6 py-8 text-center text-xs text-skyl/50">
-        <p>🛡️ Mivloc · mivloc.online · Chat Safely. Stay Protected.</p>
-        <p className="mt-1">End-to-end encrypted · Messages auto-lock in 60s · One-time chats vanish forever</p>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }
