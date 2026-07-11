@@ -69,8 +69,9 @@ export const metadata: Metadata = {
     creator: '@mivloc',
   },
   verification: {
-    // Add your verification tokens here once you claim the property:
-    // google: 'your-google-site-verification-token',
+    // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in .env.local after claiming
+    // the property at https://search.google.com/search-console
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
 }
 

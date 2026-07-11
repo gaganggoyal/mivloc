@@ -32,6 +32,7 @@ ssh "$SERVER" "
     --build-arg NEXT_PUBLIC_SUPABASE_URL=\"\$NEXT_PUBLIC_SUPABASE_URL\" \
     --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=\"\$NEXT_PUBLIC_SUPABASE_ANON_KEY\" \
     --build-arg NEXT_PUBLIC_SITE_URL=\"$SITE_URL\" \
+    --build-arg NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=\"\${NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION:-}\" \
     -t mivloc .
   docker rm -f mivloc >/dev/null 2>&1 || true
   docker run -d --restart unless-stopped --name mivloc --network $NETWORK mivloc >/dev/null
