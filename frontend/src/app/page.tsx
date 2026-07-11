@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import WatchDemo from '@/components/WatchDemo'
 import SiteFooter from '@/components/SiteFooter'
+import ThemeToggle from '@/components/ThemeToggle'
 import { FAQ } from '@/lib/faq'
 
 const FEATURES = [
@@ -20,6 +21,7 @@ export default function Landing() {
         <div className="flex items-center gap-2.5 font-extrabold text-xl">
           <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky to-mint flex items-center justify-center text-xl shadow-[0_0_25px_rgba(14,165,233,.5)]">🛡️</span>
           <span className="bg-gradient-to-r from-mint via-ice to-skyl bg-clip-text text-transparent">Mivloc</span>
+          <ThemeToggle variant="inline" />
         </div>
         <div className="flex items-center gap-2">
           <Link href="/once" className="btn-ghost hidden sm:inline-flex">One-time chat</Link>

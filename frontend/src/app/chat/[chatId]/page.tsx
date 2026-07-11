@@ -220,7 +220,7 @@ export default function ChatPage() {
               onChange={(e) => setCode(e.target.value)} placeholder="Your secret code" autoFocus />
             {codeErr && <p className="text-red-400 text-xs">{codeErr}</p>}
             <button className="btn-primary w-full" disabled={busy}>
-              {busy ? 'Verifying…' : phase === 'set-code' ? '🔐 Set my code & open chat' : 'Unlock chat →'}
+              {busy ? 'Verifying…' : phase === 'set-code' ? '🔐 Set my code & open chat' : 'Enter chat →'}
             </button>
           </form>
           <button className="text-xs text-skyl/60 mt-4 md:hidden" onClick={() => router.push('/dashboard')}>← Back to chats</button>
@@ -248,6 +248,19 @@ export default function ChatPage() {
             </span>
           )}
         </header>
+
+        {/* Locked → unlock bar sits right under the header's 🔒 chip */}
+        {locked && (
+          <form onSubmit={unlockAll} className="p-3 bg-navy/95 border-b border-red-500/25 space-y-1">
+            <div className="flex gap-2 items-center">
+              <span className="text-lg">🔒</span>
+              <input className="input flex-1 !py-2.5" type="password" value={code} onChange={(e) => setCode(e.target.value)}
+                placeholder="Locked — enter YOUR code for this chat" autoFocus />
+              <button className="btn-primary !px-4 !py-2.5 text-xs" disabled={busy}>{busy ? '…' : 'Enter'}</button>
+            </div>
+            {codeErr && <p className="text-red-400 text-xs pl-8">{codeErr}</p>}
+          </form>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
@@ -294,18 +307,8 @@ export default function ChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* Locked → unlock bar; unlocked → composer */}
-        {locked ? (
-          <form onSubmit={unlockAll} className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-navy/95 border-t border-red-500/25 space-y-1">
-            <div className="flex gap-2 items-center">
-              <span className="text-lg">🔒</span>
-              <input className="input flex-1 !py-2.5" type="password" value={code} onChange={(e) => setCode(e.target.value)}
-                placeholder="Locked — enter YOUR code for this chat" autoFocus />
-              <button className="btn-primary !px-4 !py-2.5 text-xs" disabled={busy}>{busy ? '…' : 'Unlock'}</button>
-            </div>
-            {codeErr && <p className="text-red-400 text-xs pl-8">{codeErr}</p>}
-          </form>
-        ) : (
+        {/* Composer (hidden while locked — the unlock bar is up top) */}
+        {!locked && (
           <form onSubmit={send} className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-navy/95 border-t border-sky/15 flex gap-2">
             <input className="input flex-1 !py-2.5" value={draft}
               onChange={(e) => setDraft(e.target.value)}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseBrowser, SITE_URL } from '@/lib/supabase'
+import ThemeToggle from '@/components/ThemeToggle'
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{2,31}$/
 
@@ -53,6 +54,7 @@ export default function CreateOneTime() {
 
   return (
     <main className="bg-orbs min-h-screen flex items-center justify-center px-4 py-10">
+      <ThemeToggle />
       <div className="card p-7 max-w-md w-full">
         {!created ? (<>
           <div className="text-center mb-6">

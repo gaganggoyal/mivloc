@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import ThemeToggle from '@/components/ThemeToggle'
 import { FAQ } from '@/lib/faq'
 
 // Runs before first paint so the saved theme is applied with no flash of the
@@ -148,7 +147,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        <ThemeToggle />
       </body>
     </html>
   )

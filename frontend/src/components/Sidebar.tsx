@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMivloc } from '@/lib/useMivloc'
 import ProfileModal from '@/components/ProfileModal'
 import AddByUsername from '@/components/AddByUsername'
+import ThemeToggle from '@/components/ThemeToggle'
 import type { Profile } from '@/types'
 
 /**
@@ -30,6 +31,7 @@ export default function Sidebar({ activeChatId = '', className = '' }: { activeC
           <span className="bg-gradient-to-r from-mint to-skyl bg-clip-text text-transparent">Mivloc</span>
         </Link>
         <div className="flex items-center gap-1">
+          <ThemeToggle variant="inline" />
           <button className="btn-ghost !px-2.5 !py-1.5 text-xs" onClick={() => setShowProfile(true)} title="Account settings">⚙️</button>
           <button className="btn-ghost !px-2.5 !py-1.5 text-xs" onClick={logout} title="Sign out">↩</button>
         </div>

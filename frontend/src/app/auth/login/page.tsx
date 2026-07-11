@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseBrowser, SITE_URL } from '@/lib/supabase'
+import ThemeToggle from '@/components/ThemeToggle'
 
 function AuthInner() {
   const router = useRouter()
@@ -190,6 +191,7 @@ export default function AuthPage() {
   return (
     <main className="bg-orbs min-h-screen flex items-center justify-center px-4 py-10">
       <Suspense><AuthInner /></Suspense>
+      <ThemeToggle />
     </main>
   )
 }
