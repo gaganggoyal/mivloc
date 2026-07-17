@@ -5,6 +5,11 @@ their own secret code, and one-time chats vanish forever when anyone leaves.
 
 **Live domain:** https://mivloc.online
 
+> Written with AI pair-programming — I say that plainly. The threat model and
+> every product rule below came from me deciding what "safe" should mean
+> before a line was written. [More ↓](#how-this-was-built) · Portfolio:
+> [gagan.indiaoffers.in](https://gagan.indiaoffers.in)
+
 ## Features
 | Feature | How it works |
 |---|---|
@@ -46,3 +51,27 @@ it never grows unbounded.
 - The chat code never leaves the browser; losing it means those messages stay locked forever (by design).
 - One-time chats are broadcast-only: if both people are offline, the messages simply don't exist anywhere.
 - The 60-second lock is a client-side privacy shield (shoulder-surfing, borrowed phones). The underlying storage is *always* ciphertext regardless.
+
+## How this was built
+
+Same honesty as the security model: the implementation was AI
+pair-programmed — a workflow I trained myself in and use across everything I
+ship. The decisions that make Mivloc *Mivloc* were mine before any code
+existed:
+
+- **Each person picks their own code per chat** — not a shared secret,
+  because the realistic threat is a borrowed phone, not the NSA.
+- **The 60-second dissolve** — privacy that works even when you forget to
+  log out, which is when people actually need it.
+- **One-time chats are never stored, ever** — broadcast-only was a harder
+  build than "delete after reading," and that was the point.
+- **The "honest version" section above exists on purpose** — I'd rather
+  state the limits than market around them.
+
+The full source is here to review, from the crypto calls to the DB schema.
+
+---
+
+**Gagandeep Goyal** — builds and ships web products and AI agents solo.
+Portfolio: [gagan.indiaoffers.in](https://gagan.indiaoffers.in) · GitHub:
+[@gaganggoyal](https://github.com/gaganggoyal)
