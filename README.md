@@ -10,6 +10,21 @@ their own secret code, and one-time chats vanish forever when anyone leaves.
 > before a line was written. [More ↓](#how-this-was-built) · Portfolio:
 > [gagan.indiaoffers.in](https://gagan.indiaoffers.in)
 
+## At a glance
+
+|  |  |
+|---|---|
+| **What** | End-to-end-encrypted chat: messages become AES-GCM-256 ciphertext **before** they leave the browser — the server never sees a key, an unlock code, or a plaintext message |
+| **Stack** | Next.js 14 (App Router) · TypeScript · Supabase (Auth + Postgres + Realtime) · Web Crypto API · Tailwind · Docker + Caddy on a VPS |
+| **Live** | [mivloc.online](https://mivloc.online) — deployed and running |
+| **Crypto** | Per-chat random AES-GCM-256 keys · PBKDF2 (100k iterations) unlock-code verification, on-device only · one-time rooms are realtime-broadcast only, never written to disk |
+
+**Where to look first** (for reviewers):
+
+- [frontend/src/lib/crypto.ts](frontend/src/lib/crypto.ts) — every crypto call in one file: AES-GCM encryption, PBKDF2 code verification, all client-side
+- [database/schema.sql](database/schema.sql) — tables, the salt+blob code storage (never the code itself), and the DB trigger that auto-connects invited friends
+- [frontend/src/app/chat/](frontend/src/app/chat/) — the 60-second auto-lock and the realtime message flow
+
 ## Features
 | Feature | How it works |
 |---|---|
@@ -22,9 +37,6 @@ their own secret code, and one-time chats vanish forever when anyone leaves.
 | **One-time chats** | Custom link name you choose (`/once/moon-tiger-42`). Messages travel over realtime broadcast only — **never stored**. When either person leaves, the room deletes itself: lost in space. |
 | **SEO** | Full metadata, OpenGraph, JSON-LD SoftwareApplication schema, sitemap.xml, robots.txt. |
 | **Installable (PWA)** | PWA manifest + icons → installable from the browser on any device; Capacitor-ready for a Play Store wrapper. |
-
-## Stack
-Next.js 14 (App Router) · Supabase (Auth + Postgres + Realtime) · Tailwind CSS · Web Crypto API
 
 ## Quick start
 ```bash
