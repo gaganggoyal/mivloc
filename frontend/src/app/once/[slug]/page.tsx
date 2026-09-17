@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabaseBrowser } from '@/lib/supabase'
+import { supabaseBrowser, describeError } from '@/lib/supabase'
 import OncePromo from '@/components/OncePromo'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -19,7 +19,8 @@ export default function OneTimeRoom() {
   const router = useRouter()
   const supabase = supabaseBrowser()
 
-  const [phase, setPhase] = useState<'checking'|'join'|'open'|'dissolved'|'notfound'>('checking')
+  const [phase, setPhase] = useState<'checking'|'join'|'open'|'dissolved'|'notfound'|'error'>('checking')
+  const [errMsg, setErrMsg] = useState('')
   const [nick, setNick] = useState('')
   const [msgs, setMsgs] = useState<EphMsg[]>([])
   const [draft, setDraft] = useState('')
@@ -32,7 +33,9 @@ export default function OneTimeRoom() {
   // Room must exist
   useEffect(() => {
     ;(async () => {
-      const { data } = await supabase.from('onetime_rooms').select('slug').eq('slug', slug).maybeSingle()
+      const { data, error } = await supabase.from('onetime_rooms').select('slug').eq('slug', slug).maybeSingle()
+      // Couldn't ask the server ≠ the room is gone — don't claim it dissolved
+      if (error) { setErrMsg(describeError(error)); setPhase('error'); return }
       if (!data) { setPhase('notfound'); return }
       const saved = sessionStorage.getItem(`sc_once_nick_${slug}`)
       if (saved) { setNick(saved); join(saved) } else setPhase('join')
@@ -124,6 +127,20 @@ export default function OneTimeRoom() {
         <h1 className="font-bold mb-2">This chat is gone</h1>
         <p className="text-sm text-skyl mb-6">Either it never existed, or someone left and it dissolved into space. That&apos;s the whole point.</p>
         <Link href="/once" className="btn-primary w-full">Create a new one-time chat</Link>
+      </div>
+    </Center>
+  )
+
+  if (phase === 'error') return (
+    <Center>
+      <div className="card p-8 max-w-sm w-full text-center">
+        <div className="text-5xl mb-3">⚠️</div>
+        <h1 className="font-bold mb-2">Can&apos;t open this chat right now</h1>
+        <p className="text-sm text-skyl mb-6">{errMsg}</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button className="btn-primary text-xs !py-2.5" onClick={() => location.reload()}>Try again</button>
+          <Link href="/" className="btn-ghost text-xs !py-2.5">Mivloc home</Link>
+        </div>
       </div>
     </Center>
   )

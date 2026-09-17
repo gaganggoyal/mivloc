@@ -1,0 +1,214 @@
+# Mivloc — self-hosted Supabase (Auth + REST + Realtime + Postgres) on the VPS.
+#
+# Trimmed from the official supabase/supabase docker/ stack (Kong variant).
+# Left out on purpose: Studio, Storage, Edge Functions, Analytics, Supavisor —
+# Mivloc uses none of them. Secrets live in ./.env (server-only, never in git;
+# created once by ./setup.sh). Caddy fronts Kong at https://mivloc.online/api/*.
+#
+#   docker compose up -d          # start / apply config changes
+#   ./apply-schema.sh             # (re)apply ../database/schema.sql
+#   docker compose logs -f auth   # tail a service
+
+# Health checks run every 30s (not upstream's 5s): each one is a `runc exec`,
+# and this VPS's disk is slow enough that the churn showed up in iowait.
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+services:
+  db:
+    container_name: supabase-db
+    image: supabase/postgres:17.6.1.136
+    restart: unless-stopped
+    volumes:
+      - ./db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      - ./db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      # Named volumes: survive `docker compose down`, untouched by deploy rsync
+      - pgdata:/var/lib/postgresql/data
+      - dbconfig:/etc/postgresql-custom
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_EXP: ${JWT_EXPIRY:-3600}
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal   # keeps Realtime's polling out of the logs
+    logging: *logging
+
+  auth:
+    container_name: supabase-auth
+    image: supabase/gotrue:v2.196.0
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      # Public URL of the auth API — used as JWT issuer and to build email links
+      API_EXTERNAL_URL: ${PUBLIC_API_URL}/auth/v1
+
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
+      # true = no new accounts (use while SMTP is unset: without a mailer GoTrue
+      # silently creates users who can never verify).
+      GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_ISSUER: ${PUBLIC_API_URL}/auth/v1
+
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_PASSWORD_MIN_LENGTH: 6
+
+      # Email verification. AUTOCONFIRM=true skips the verification mail
+      # entirely (accounts activate instantly) — only for emergencies.
+      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM:-false}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT}
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
+      # Link targets are resolved against API_EXTERNAL_URL — keep the /api prefix
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${PUBLIC_API_PATH}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_INVITE: ${PUBLIC_API_PATH}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: ${PUBLIC_API_PATH}/auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${PUBLIC_API_PATH}/auth/v1/verify
+      # Mivloc's branded confirm mail (token_hash link → works on any device).
+      # GoTrue fetches it over HTTP; the Next app serves it from public/.
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: ${SITE_URL}/email-templates/confirm-signup.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Verify your email · Mivloc 🛡️"
+    logging: *logging
+
+  rest:
+    container_name: supabase-rest
+    image: postgrest/postgrest:v14.17
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "postgrest", "--ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_ADMIN_SERVER_PORT: 3001
+      PGRST_ADMIN_SERVER_HOST: localhost
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY:-3600}
+    command: ["postgrest"]
+    logging: *logging
+
+  realtime:
+    # Odd name on purpose: Realtime derives the tenant id from the first
+    # subdomain of the host it is reached on (tenant = "realtime-dev").
+    container_name: realtime-dev.supabase-realtime
+    image: supabase/realtime:v2.134.10
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSfL --head -o /dev/null -H \"Authorization: Bearer ${ANON_KEY}\" http://localhost:4000/api/tenants/realtime-dev/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
+      DB_ENC_KEY: ${REALTIME_DB_ENC_KEY}
+      API_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      METRICS_JWT_SECRET: ${JWT_SECRET}
+      ERL_AFLAGS: -proto_dist inet_tcp
+      DNS_NODES: "''"
+      RLIMIT_NOFILE: "10000"
+      APP_NAME: realtime
+      SEED_SELF_HOST: "true"
+      RUN_JANITOR: "true"
+      DISABLE_HEALTHCHECK_LOGGING: "true"
+    logging: *logging
+
+  kong:
+    # API gateway: apikey check + routing. The only service on the shared
+    # Caddy network — Caddy proxies https://mivloc.online/api/* here.
+    container_name: supabase-kong
+    image: kong/kong:3.9.3
+    restart: unless-stopped
+    networks: [default, edge]
+    depends_on:
+      auth: { condition: service_healthy }
+      rest: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 127.0.0.1:8000:8000   # loopback only, for curl checks on the server
+    volumes:
+      - ./kong.yml:/home/kong/temp.yml:ro,z
+      - ./kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro,z
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_ROUTER_FLAVOR: expressions
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_DNS_NOT_FOUND_TTL: 1
+      KONG_DNS_VALID_TTL: 5
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,request-termination
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+      KONG_PROXY_ACCESS_LOG: "off"   # one disk write per request otherwise; errors still logged
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+    entrypoint: ["/bin/sh", "/home/kong/kong-entrypoint.sh"]
+    logging: *logging
+
+networks:
+  default: {}
+  edge:
+    external: true
+    name: ${EDGE_NETWORK:-cricketverse_deploy_default}
+
+volumes:
+  pgdata:
+  dbconfig:

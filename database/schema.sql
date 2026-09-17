@@ -1,7 +1,7 @@
 -- ════════════════════════════════════════════════════════════
 -- Mivloc — Supabase Schema
--- Run once in Supabase SQL Editor.
--- Then: Authentication → Providers → Email → enable "Confirm email"
+-- Idempotent — safe to re-run. Self-hosted: ./supabase/apply-schema.sh
+-- Hosted Supabase: paste in the SQL Editor, then enable "Confirm email".
 -- ════════════════════════════════════════════════════════════
 create extension if not exists "uuid-ossp";
 
@@ -29,8 +29,11 @@ update profiles set username = referral_code where username is null;
 -- profile insert in handle_new_user() below will fail, so the signup can't complete.
 create unique index if not exists profiles_email_lower_key on profiles (lower(email));
 alter table profiles enable row level security;
+drop policy if exists "profiles readable by authed" on profiles;
 create policy "profiles readable by authed" on profiles for select using (auth.role() = 'authenticated');
+drop policy if exists "own profile insert" on profiles;
 create policy "own profile insert" on profiles for insert with check (auth.uid() = id);
+drop policy if exists "own profile update" on profiles;
 create policy "own profile update" on profiles for update using (auth.uid() = id);
 
 -- Anon-safe username availability check for the signup form (leaks only yes/no)
@@ -91,8 +94,11 @@ create table if not exists friendships (
   check (user_a < user_b)
 );
 alter table friendships enable row level security;
+drop policy if exists "own friendships select" on friendships;
 create policy "own friendships select" on friendships for select using (auth.uid() in (user_a, user_b));
+drop policy if exists "own friendships insert" on friendships;
 create policy "own friendships insert" on friendships for insert with check (auth.uid() in (user_a, user_b));
+drop policy if exists "own friendships delete" on friendships;
 create policy "own friendships delete" on friendships for delete using (auth.uid() in (user_a, user_b));
 
 -- ── CHATS (per friend pair) ──────────────────────────────────
@@ -118,6 +124,7 @@ alter table chats add column if not exists code_check_a text;
 alter table chats add column if not exists code_salt_b  text;
 alter table chats add column if not exists code_check_b text;
 alter table chats enable row level security;
+drop policy if exists "own chats all" on chats;
 create policy "own chats all" on chats for all
   using (auth.uid() in (user_a, user_b)) with check (auth.uid() in (user_a, user_b));
 
@@ -131,13 +138,23 @@ create table if not exists messages (
 );
 create index if not exists idx_messages_chat on messages(chat_id, created_at);
 alter table messages enable row level security;
+drop policy if exists "chat members read" on messages;
 create policy "chat members read" on messages for select using (
   exists (select 1 from chats c where c.id = chat_id and auth.uid() in (c.user_a, c.user_b)));
+drop policy if exists "chat members write" on messages;
 create policy "chat members write" on messages for insert with check (
   sender_id = auth.uid() and
   exists (select 1 from chats c where c.id = chat_id and auth.uid() in (c.user_a, c.user_b)));
 
-alter publication supabase_realtime add table messages;
+do $$ begin
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    create publication supabase_realtime;
+  end if;
+  if not exists (select 1 from pg_publication_tables
+                 where pubname = 'supabase_realtime' and tablename = 'messages') then
+    alter publication supabase_realtime add table messages;
+  end if;
+end $$;
 
 -- ── ONE-TIME ROOMS — custom slug; messages NEVER stored ─────
 create table if not exists onetime_rooms (
@@ -146,8 +163,11 @@ create table if not exists onetime_rooms (
   created_at timestamptz default now()
 );
 alter table onetime_rooms enable row level security;
+drop policy if exists "rooms public select" on onetime_rooms;
 create policy "rooms public select" on onetime_rooms for select using (true);
+drop policy if exists "rooms public insert" on onetime_rooms;
 create policy "rooms public insert" on onetime_rooms for insert with check (true);
+drop policy if exists "rooms public delete" on onetime_rooms;
 create policy "rooms public delete" on onetime_rooms for delete using (true);
 
 -- Safety net: purge rooms older than 24h (normal path deletes instantly on leave)

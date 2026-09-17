@@ -1,6 +1,49 @@
 # 🚀 Mivloc — Deployment Guide
 
-## 1. Database — Supabase (free tier)
+## 1. Database + Auth — self-hosted Supabase on the VPS (default)
+Mivloc runs the open-source Supabase stack on the same VPS as the site:
+Postgres 17, Auth (GoTrue), REST (PostgREST) and Realtime behind a Kong
+gateway. Caddy exposes it at **`https://mivloc.online/api/*`**. Everything
+lives in [supabase/](supabase/) — no supabase.com account, no free-tier
+pausing.
+
+**First-time bring-up (already done for mivloc.online):**
+```bash
+# on the VPS, after ./deploy.sh has synced the repo once
+cd /root/mivloc/supabase
+./setup.sh                 # generates .env with secrets; prints the anon key
+docker compose up -d       # 5 containers: db, auth, rest, realtime, kong
+./apply-schema.sh          # applies ../database/schema.sql (idempotent)
+```
+Then add a `handle_path /api/*` → `supabase-kong:8000` block to the Caddyfile
+(see [supabase/README.md](supabase/README.md)), put the printed URL + anon
+key in `frontend/.env.local`, and run `./deploy.sh`.
+
+**Email verification** needs SMTP. Without a mailer GoTrue *silently* creates
+accounts that can never be verified, so signups stay **disabled**
+(`DISABLE_SIGNUP=true`) until SMTP is configured. To enable: in
+`/root/mivloc/supabase/.env` fill in `SMTP_HOST/PORT/USER/PASS` (Resend, Brevo,
+SES, Gmail app password…), set `DISABLE_SIGNUP=false`, then
+`cd /root/mivloc/supabase && docker compose up -d auth`. Emergency bypass
+(accounts activate with no email at all): `ENABLE_EMAIL_AUTOCONFIRM=true`.
+
+**Day-to-day:**
+- `./deploy.sh` keeps the stack up (`docker compose up -d` is a no-op unless
+  the compose file changed) and installs the nightly backup cron.
+- Schema change: edit `database/schema.sql`, then
+  `ssh root@VPS /root/mivloc/supabase/apply-schema.sh`.
+- Backups: `/root/mivloc-backups/mivloc-YYYY-MM-DD.sql.gz` nightly at 03:15
+  (`/etc/cron.d/mivloc-backup`), 14 kept. They're on the same VPS — copy them
+  off-box periodically.
+- This VPS's disk is slow (~25 ms per I/O). Expect `./deploy.sh` builds to take
+  15–25 min, and never interrupt a `docker compose up/down` mid-way — a killed
+  first-boot once left Postgres half-migrated and needed `down -v` to recover.
+- SQL access: `docker exec -it supabase-db psql -U supabase_admin -d postgres`
+- Logs: `cd /root/mivloc/supabase && docker compose logs -f auth` (or rest/realtime/kong/db)
+
+<details>
+<summary><b>Alternative: hosted supabase.com project</b> (the original setup — click to expand)</summary>
+
 1. Create a project at supabase.com (or reuse your dev project — a separate
    production project is cleaner).
 2. **SQL Editor** → run `database/schema.sql` (idempotent for tables/grants;
@@ -25,6 +68,9 @@
 > real SMTP: **Project Settings → Authentication → SMTP** (Resend, Brevo,
 > Amazon SES etc. have free tiers).
 
+
+</details>
+
 ## 2. Website — Option A: Vercel (easiest, free)
 ```bash
 npm i -g vercel
@@ -33,7 +79,7 @@ vercel --prod
 ```
 Environment variables to set in the Vercel dashboard (Settings → Environment Variables):
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://mivloc.online/api      # or a hosted project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 NEXT_PUBLIC_SITE_URL=https://mivloc.online
 ```
@@ -45,7 +91,7 @@ The build is configured with `output: 'standalone'` and ships a `Dockerfile`:
 ```bash
 cd frontend
 docker build \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://mivloc.online/api \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ... \
   --build-arg NEXT_PUBLIC_SITE_URL=https://mivloc.online \
   -t mivloc .
@@ -95,6 +141,26 @@ Image Asset tool).
   branding whenever you like (192, 512 and apple-touch sizes).
 - Keep `.env.local` out of git (already in `.gitignore`) — set production keys
   only in the Vercel dashboard / Docker build args.
+
+## Troubleshooting
+**Nothing works — one-time chat says "Can't reach Mivloc's server", login/signup fail.**
+Self-hosted: `ssh root@VPS 'cd /root/mivloc/supabase && docker compose ps'` —
+every service should be `healthy`; `docker compose logs --tail 50 <service>`
+for the one that isn't, then `docker compose up -d`. Also
+`curl -s https://mivloc.online/api/auth/v1/health` should return JSON.
+
+**(Hosted supabase.com only)** browser console shows `ERR_NAME_NOT_RESOLVED xxxx.supabase.co`:
+the Supabase project has been **paused**. Free-tier projects pause after
+~7 days without activity, and a paused project's hostname is removed from DNS,
+so every request fails before it reaches a server (quick check:
+`dig xxxx.supabase.co` → `NXDOMAIN`). Fix: Supabase dashboard → the project →
+**Restore project** → wait a few minutes. No redeploy needed — the URL and keys
+stay the same. If the project was deleted instead (paused projects are
+eventually purged), create a new one, repeat section 1 above, put the new
+URL + anon key in `frontend/.env.local`, and run `./deploy.sh`.
+To stop it recurring: upgrade the project, or keep it active with a scheduled
+ping (e.g. a cron/GitHub Action that hits `/rest/v1/onetime_rooms?select=slug&limit=1`
+with the anon key every few days).
 
 ## Local development
 ```bash

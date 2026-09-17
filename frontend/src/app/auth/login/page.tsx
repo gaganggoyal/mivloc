@@ -2,7 +2,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabaseBrowser, SITE_URL } from '@/lib/supabase'
+import { supabaseBrowser, SITE_URL, isUnreachable, UNREACHABLE_MSG } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
 
 function AuthInner() {
@@ -77,7 +77,11 @@ function AuthInner() {
       }
     } catch (e: any) {
       const m: string = e?.message || ''
-      if (m.includes('email_already_registered') || m.includes('already registered') || m.includes('already has an account')) {
+      if (isUnreachable(e)) {
+        setErr(UNREACHABLE_MSG)
+      } else if (m.includes('Signups not allowed')) {
+        setErr('New signups are paused for a short while — please try again later.')
+      } else if (m.includes('email_already_registered') || m.includes('already registered') || m.includes('already has an account')) {
         setErr('This email already has an account — try signing in instead.')
       } else if (m.includes('username') || m.includes('duplicate') || m.includes('Database error saving')) {
         setErr('That username was just taken — please pick another and try again.')

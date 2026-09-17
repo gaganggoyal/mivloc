@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabaseBrowser, SITE_URL } from '@/lib/supabase'
+import { supabaseBrowser, SITE_URL, describeError } from '@/lib/supabase'
 import ThemeToggle from '@/components/ThemeToggle'
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{2,31}$/
@@ -18,7 +18,9 @@ export default function CreateOneTime() {
   const router = useRouter()
   const [slug, setSlug] = useState('')
   const [nick, setNick] = useState('')
-  const [status, setStatus] = useState<'idle'|'checking'|'free'|'taken'|'invalid'>('idle')
+  const [status, setStatus] = useState<'idle'|'checking'|'free'|'taken'|'invalid'|'error'>('idle')
+  const [errMsg, setErrMsg] = useState('')
+  const [retry, setRetry] = useState(0)
   const [created, setCreated] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState('')
@@ -32,11 +34,13 @@ export default function CreateOneTime() {
     if (!SLUG_RE.test(s)) { setStatus('invalid'); return }
     setStatus('checking')
     const t = setTimeout(async () => {
-      const { data } = await supabase.from('onetime_rooms').select('slug').eq('slug', s).maybeSingle()
+      const { data, error } = await supabase.from('onetime_rooms').select('slug').eq('slug', s).maybeSingle()
+      // A failed lookup is not an available name — say so instead of guessing
+      if (error) { setErrMsg(describeError(error)); setStatus('error'); return }
       setStatus(data ? 'taken' : 'free')
     }, 450)
     return () => clearTimeout(t)
-  }, [slug]) // eslint-disable-line
+  }, [slug, retry]) // eslint-disable-line
 
   const link = `${SITE_URL}/once/${slug.trim().toLowerCase()}`
   const shareText = `💨 Join my one-time Mivloc chat — it vanishes forever when either of us leaves: ${link}`
@@ -47,7 +51,11 @@ export default function CreateOneTime() {
     setBusy(true)
     const { error } = await supabase.from('onetime_rooms').insert({ slug: s, creator: nick.trim() || 'anonymous' })
     setBusy(false)
-    if (error) { setStatus('taken'); return }
+    if (error) {
+      // 23505 = unique_violation: someone grabbed the name between the check and the insert
+      if (error.code === '23505') { setStatus('taken'); return }
+      setErrMsg(describeError(error)); setStatus('error'); return
+    }
     sessionStorage.setItem(`sc_once_nick_${s}`, nick.trim() || 'Creator')
     setCreated(true)
   }
@@ -73,11 +81,13 @@ export default function CreateOneTime() {
               onChange={(e) => setSlug(e.target.value.toLowerCase())}
               placeholder="my-secret-room" autoFocus />
           </div>
-          <div className="h-5 text-[11px] mb-2">
+          <div className="min-h-5 text-[11px] mb-2 leading-snug">
             {status === 'checking' && <span className="text-skyl/60">Checking availability…</span>}
             {status === 'free'     && <span className="text-mint">✓ Available — this link is yours</span>}
             {status === 'taken'    && <span className="text-red-400">✗ Taken right now — try another name</span>}
             {status === 'invalid'  && <span className="text-amber-400">3–32 chars: lowercase letters, numbers, hyphens</span>}
+            {status === 'error'    && <span className="text-red-400">⚠ {errMsg}{' '}
+              <button type="button" className="underline" onClick={() => setRetry((r) => r + 1)}>Retry</button></span>}
           </div>
           <button className="text-[11px] text-skyl/60 underline mb-4" type="button"
             onClick={() => setSlug(randomSuggestion())}>🎲 Suggest a name for me</button>
